@@ -18,6 +18,7 @@ function findAnnotationsDbPath() {
 
 function formatBook(rawTableData) {
   return {
+    bookID:rawTableData.ZASSETID,
     title: rawTableData.ZTITLE,
     author: rawTableData.ZAUTHOR,
     filePath: rawTableData.ZPATH
@@ -58,7 +59,6 @@ ibooks.getBooks = async function getBooks() {
         bookRows.forEach(row => {
           books[row.ZASSETID] = formatBook(row);
         });
-
         resolve(books);
       }
 
@@ -71,6 +71,7 @@ ibooks.getAnnotations = async function getAnnotations() {
   const booksPath = await findBooksDbPath();
   const annotationsPath = await findAnnotationsDbPath();
   const books = await this.getBooks(booksPath)
+  // console.log(books)
   const ann_db = new sqlite3.Database(annotationsPath, sqlite3.OPEN_READONLY, utils.handleConnect);
   return new Promise((resolve, reject) => {
     ann_db.all(constants.ANNOTATIONS_QUERY, (err, annRows) => {
@@ -80,7 +81,7 @@ ibooks.getAnnotations = async function getAnnotations() {
         let annotations = annRows.map(formatAnnotation.bind(this, books));
         // TODO: removing nulls... is this slow?
         annotations = annotations.filter(ann => !!ann);
-        resolve(annotations);
+        resolve(annotations); //this is what will be output
       }
 
       ann_db.close(utils.handleClose);
